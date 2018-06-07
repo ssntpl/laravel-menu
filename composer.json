@@ -1,6 +1,6 @@
 {
     "name": "ssntpl/laravel-menu",
-    "description": "Forked from lavary/laravel-menu. A quick way to create menus in Laravel 5. ",
+    "description": "A quick way to create menus in Laravel 5. ",
     "keywords": [
         "laravel"
     ],
