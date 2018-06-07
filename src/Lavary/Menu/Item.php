@@ -70,6 +70,11 @@ class Item
     protected $data = array();
 
     /**
+     * to hold sort order of items;
+     */
+    protected $sort_order;
+    
+    /**
      * If this is the currently active item, doesn't include parents.
      *
      * @var bool
@@ -533,5 +538,26 @@ class Item
         }
 
         return $this->data($prop);
+    }
+
+    /**
+     * instantiate sort_order 
+     * * 
+     * @param int
+     *
+     * @return Item
+     */
+    public function sortOrder($number = null)
+    {
+        if(is_numeric($number))
+        {
+            $this->sort_order = $number;
+            return $this;
+        }
+        else if ($number == null)
+        {
+            return $this->sort_order;
+        }
+        return $this;
     }
 }

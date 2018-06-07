@@ -461,7 +461,7 @@ class Builder
      *
      * @return Builder
      */
-    public function sortBy($sort_by, $sort_type = 'asc')
+    public function sortBy($sort_by = 'sort_order', $sort_type = 'asc')
     {
         if (is_callable($sort_by)) {
             $rslt = call_user_func($sort_by, $this->items->to[]);
@@ -662,6 +662,7 @@ class Builder
      */
     public function asUl($attributes = [], $children_attributes = [], $item_attributes = [], $item_after_calback = null, $item_after_calback_params = [])
     {
+        $this->sortBy();
         return '<ul'.self::attributes($attributes).'>'.$this->render('ul', null, $children_attributes, $item_attributes, $item_after_calback, $item_after_calback_params).'</ul>';
     }
 
@@ -678,6 +679,7 @@ class Builder
      */
     public function asOl($attributes = [], $children_attributes = [], $item_attributes = [], $item_after_calback = null, $item_after_calback_params = [])
     {
+        $this->sortBy();
         return '<ol'.self::attributes($attributes).'>'.$this->render('ol', null, $children_attributes, $item_attributes, $item_after_calback, $item_after_calback_params).'</ol>';
     }
 
@@ -694,6 +696,7 @@ class Builder
      */
     public function asDiv($attributes = [], $children_attributes = [], $item_attributes = [], $item_after_calback = null, $item_after_calback_params = [])
     {
+        $this->sortBy();
         return '<div'.self::attributes($attributes).'>'.$this->render('div', null, $children_attributes, $item_attributes, $item_after_calback, $item_after_calback_params).'</div>';
     }
 
