@@ -1,18 +1,14 @@
 {
-    "name": "ssntpl/laravel-menu",
-    "description": "A quick way to create menus in Laravel 5. ",
+    "name": "lavary/laravel-menu",
+    "description": "A quick way to create menus in Laravel 5",
     "keywords": [
         "laravel"
     ],
-    "homepage": "https://github.com/ssntpl/laravel-menu",
+    "homepage": "https://github.com/lavary/laravel-menu",
     "authors": [
         {
             "name": "Lavary",
             "email": "mrl.8081@gmail.com"
-        },
-        {
-            "name": "SSNTPL",
-            "email": "info@ssntpl.com"
         }
     ],
     "license": "MIT",
