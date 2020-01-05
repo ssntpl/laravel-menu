@@ -2,12 +2,15 @@
 
 namespace Lavary\Menu;
 
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\URL;
+
 class Builder
 {
     /**
      * The items container.
      *
-     * @var array
+     * @var Collection
      */
     protected $items;
 
@@ -240,7 +243,7 @@ class Builder
 
         $new['class'] = self::formatGroupClass($new, $old);
 
-        return array_merge(array_except($old, array('prefix', 'class')), $new);
+        return array_merge(Arr::except($old, array('prefix', 'class')), $new);
     }
 
     /**
@@ -254,10 +257,10 @@ class Builder
     public static function formatGroupPrefix($new, $old)
     {
         if (isset($new['prefix'])) {
-            return trim(array_get($old, 'prefix'), '/').'/'.trim($new['prefix'], '/');
+            return trim(Arr::get($old, 'prefix'), '/').'/'.trim($new['prefix'], '/');
         }
 
-        return array_get($old, 'prefix');
+        return Arr::get($old, 'prefix');
     }
 
     /**
@@ -268,7 +271,7 @@ class Builder
     public function getLastGroupPrefix()
     {
         if (count($this->groupStack) > 0) {
-            return array_get(last($this->groupStack), 'prefix', '');
+            return Arr::get(last($this->groupStack), 'prefix', '');
         }
 
         return null;
@@ -297,12 +300,12 @@ class Builder
     public static function formatGroupClass($new, $old)
     {
         if (isset($new['class'])) {
-            $classes = trim(trim(array_get($old, 'class')).' '.trim(array_get($new, 'class')));
+            $classes = trim(trim(Arr::get($old, 'class')).' '.trim(Arr::get($new, 'class')));
 
             return implode(' ', array_unique(explode(' ', $classes)));
         }
 
-        return array_get($old, 'class');
+        return Arr::get($old, 'class');
     }
 
     /**
@@ -322,7 +325,7 @@ class Builder
             $options = $this->mergeWithLastGroup($options);
         }
 
-        return array_except($options, $this->reserved);
+        return Arr::except($options, $this->reserved);
     }
 
     /**
@@ -374,14 +377,14 @@ class Builder
                 return $url[0];
             }
 
-            return \URL::to($prefix.'/'.$url[0], array_slice($url, 1), $secure);
+            return URL::to($prefix.'/'.$url[0], array_slice($url, 1), $secure);
         }
 
         if (self::isAbs($url)) {
             return $url;
         }
 
-        return \URL::to($prefix.'/'.$url, [], $secure);
+        return URL::to($prefix.'/'.$url, [], $secure);
     }
 
     /**
@@ -406,10 +409,10 @@ class Builder
     protected function getRoute($options)
     {
         if (is_array($options)) {
-            return \URL::route($options[0], array_slice($options, 1));
+            return URL::route($options[0], array_slice($options, 1));
         }
 
-        return \URL::route($options);
+        return URL::route($options);
     }
 
     /**
@@ -422,10 +425,10 @@ class Builder
     protected function getControllerAction($options)
     {
         if (is_array($options)) {
-            return \URL::action($options[0], array_slice($options, 1));
+            return URL::action($options[0], array_slice($options, 1));
         }
 
-        return \URL::action($options);
+        return URL::action($options);
     }
 
     /**
@@ -464,13 +467,14 @@ class Builder
     public function sortBy($sort_by = 'sort_order', $sort_type = 'asc')
     {
         if (is_callable($sort_by)) {
-            $rslt = call_user_func($sort_by, $this->items->to[]);
+            $rslt = call_user_func($sort_by, $this->items->toArray());
 
             if (!is_array($rslt)) {
                 $rslt = array($rslt);
             }
 
             $this->items = new Collection($rslt);
+            return $this;
         }
 
         // running the sort proccess on the sortable items
@@ -770,7 +774,7 @@ class Builder
         $attrs['class'] = self::formatGroupClass($attrs, $old);
 
         // Merging new and old array and parse it as a string
-        return self::attributes(array_merge(array_except($old, array('class')), $attrs));
+        return self::attributes(array_merge(Arr::except($old, array('class')), $attrs));
     }
 
     /**

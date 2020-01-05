@@ -2,7 +2,9 @@
 
 namespace Lavary\Menu;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Request;
 
 class Item
 {
@@ -63,6 +65,13 @@ class Item
     protected $parent;
 
     /**
+     * Holds link element.
+     *
+     * @var Link|null
+     */
+    protected $link;
+
+    /**
      * Extra information attached to the menu item.
      *
      * @var array
@@ -96,20 +105,27 @@ class Item
     public $isActive = false;
 
     /**
+     * If true this prevents auto activation by matching URL
+     * Activation by active children keeps working.
+     *
+     * @var bool
+     */
+    private $disableActivationByURL = false;
+
+    /**
      * Creates a new Item instance.
      *
-     * @param string  $title
-     * @param string  $url
-     * @param array   $attributes
-     * @param int     $parent
      * @param Builder $builder
+     * @param int     $id
+     * @param string  $title
+     * @param array   $options
      */
     public function __construct($builder, $id, $title, $options)
     {
         $this->builder = $builder;
         $this->id = $id;
         $this->title = $title;
-        $this->nickname = isset($options['nickname']) ? $options['nickname'] : camel_case(Str::ascii($title));
+        $this->nickname = isset($options['nickname']) ? $options['nickname'] : Str::camel(Str::ascii($title));
 
         $this->attributes = $this->builder->extractAttributes($options);
         $this->parent = (is_array($options) && isset($options['parent'])) ? $options['parent'] : null;
@@ -120,7 +136,10 @@ class Item
         } elseif (isset($options['raw']) && true == $options['raw']) {
             $path = null;
         } else {
-            $path = array_only($options, array('url', 'route', 'action', 'secure'));
+            $path = Arr::only($options, array('url', 'route', 'action', 'secure'));
+        }
+        if (isset($options['disableActivationByURL']) && true == $options['disableActivationByURL']) {
+            $this->disableActivationByURL = true;
         }
 
         if (!is_null($path)) {
@@ -140,6 +159,7 @@ class Item
      *
      * @param string       $title
      * @param string|array $options
+     * @return Item
      */
     public function add($title, $options = '')
     {
@@ -157,6 +177,8 @@ class Item
     /**
      * Add a plain text item.
      *
+     * @param $title
+     * @param array $options
      * @return Item
      */
     public function raw($title, array $options = array())
@@ -167,7 +189,7 @@ class Item
     }
 
     /**
-     * Insert a seprator after the item.
+     * Insert a separator after the item.
      *
      * @param array $attributes
      *
@@ -228,7 +250,7 @@ class Item
     {
         // If the item has a link proceed:
         if (!is_null($this->link)) {
-            // If item's link has `href` property explcitly defined
+            // If item's link has `href` property explicitly defined
             // return it
             if ($this->link->href) {
                 return $this->link->href;
@@ -242,6 +264,7 @@ class Item
     /**
      * Prepends text or html to the item.
      *
+     * @param $html
      * @return Item
      */
     public function prepend($html)
@@ -254,6 +277,7 @@ class Item
     /**
      * Appends text or html to the item.
      *
+     * @param $html
      * @return Item
      */
     public function append($html)
@@ -266,6 +290,7 @@ class Item
     /**
      * Before text or html to the item.
      *
+     * @param $html
      * @return Item
      */
     public function before($html)
@@ -278,6 +303,7 @@ class Item
     /**
      * After text or html to the item.
      *
+     * @param $html
      * @return Item
      */
     public function after($html)
@@ -342,9 +368,12 @@ class Item
      */
     public function checkActivationStatus()
     {
+        if (true === $this->disableActivationByURL) {
+            return;
+        }
         if (true == $this->builder->conf['restful']) {
             $path = ltrim(parse_url($this->url(), PHP_URL_PATH), '/');
-            $rpath = ltrim(parse_url(\Request::path(), PHP_URL_PATH), '/');
+            $rpath = ltrim(parse_url(Request::path(), PHP_URL_PATH), '/');
 
             if ($this->builder->conf['rest_base']) {
                 $base = (is_array($this->builder->conf['rest_base'])) ? implode('|', $this->builder->conf['rest_base']) : $this->builder->conf['rest_base'];
@@ -357,7 +386,7 @@ class Item
             }
         } else {
             // We should consider a $strict config. If $strict then only match against fullURL.
-            if ($this->url() == \Request::url() || $this->url() == \Request::fullUrl()) {
+            if ($this->url() == Request::url() || $this->url() == Request::fullUrl()) {
                 $this->activate();
             }
         }
@@ -403,6 +432,7 @@ class Item
      * Activate the item.
      *
      * @param Item $item
+     * @param bool $recursion
      */
     public function activate(Item $item = null, $recursion = false)
     {
@@ -431,13 +461,14 @@ class Item
     /**
      * Make the item active.
      *
+     * @param null|string $pattern
      * @return Item
      */
     public function active($pattern = null)
     {
         if (!is_null($pattern)) {
             $pattern = ltrim(preg_replace('/\/\*/', '(/.*)?', $pattern), '/');
-            if (preg_match("@^{$pattern}\z@", \Request::path())) {
+            if (preg_match("@^{$pattern}\z@", Request::path())) {
                 $this->activate();
             }
 

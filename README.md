@@ -5,7 +5,7 @@
 [![License](https://poser.pugx.org/lavary/laravel-menu/license.svg)](https://packagist.org/packages/lavary/laravel-menu)
 
 
-A quick and easy way to create menus in [Laravel 5](http://laravel.com/)
+A quick and easy way to create menus in [Laravel 6](http://laravel.com/)
 
 __For Laravel 4.x, check [version 1.5.0](https://github.com/lavary/laravel-menu/tree/v1.5.0)__
 
@@ -19,8 +19,8 @@ __For Laravel 4.x, check [version 1.5.0](https://github.com/lavary/laravel-menu/
     - [Controller Actions](#controller-actions)
     - [HTTPS](#https)
 * [Sub-items](#sub-items)
-* [Set Item's ID Manualy](#)
-* [Set Item's Nicknames Manualy](#)
+* [Set Item's ID Manualy](#set-items-id-manually)
+* [Set Item's Nicknames Manualy](#set-items-nickname-manually)
 * [Referring to Items](#referring-to-items)
     - [Get Item by Title](#get-item-by-title)
     - [Get Item by Id](#get-item-by-id)
@@ -38,6 +38,7 @@ __For Laravel 4.x, check [version 1.5.0](https://github.com/lavary/laravel-menu/
 * [Active Item](#active-item)
     - [RESTful URLs](#restful-urls)
     - [URL Wildcards](#url-wildcards)
+    - [Disable activation](#disable-activation)
 * [Inserting a Separator](#inserting-a-separator)
 * [Append and Prepend](#append-and-prepend)
 * [Before and After](#before-and-after)
@@ -53,6 +54,7 @@ __For Laravel 4.x, check [version 1.5.0](https://github.com/lavary/laravel-menu/
     - [Menu as Ordered List](#menu-as-ordered-list)
     - [Menu as Div](#menu-as-div)
     - [Menu as Bootstrap 3 Navbar](#menu-as-bootstrap-3-navbar)
+    - [Adding class attributes to child items](#adding-class-attributes-to-child-items)
 * [Subset Menus](#subset-menus)
     - [Top Menu](#top-menu)
     - [Sub Menu](#sub-menu)
@@ -61,7 +63,7 @@ __For Laravel 4.x, check [version 1.5.0](https://github.com/lavary/laravel-menu/
 * [Advanced Usage](#advanced-usage)
     + [A Basic Example](#a-basic-example)
     + [Control Structure for Blade](#control-structure-for-blade)
-        - [@lm-attrs](#lm-attrs)
+        - [@lm_attrs](#lm_attrs)
     + [Attributes and Callback function of item](#attributes-and-callback-function-of-item)
 * [Configuration](#configuration)
 * [If You Need Help](#if-you-need-help)
@@ -774,6 +776,15 @@ $menu->add('Articles', 'articles')->active('this-is-another-url/*');
 
 So `this-is-another-url`, `this-is-another-url/and-another` will both activate `Articles` item.
 
+#### Disable activation
+Sometimes you may need to disable auto activation for single items.
+You can pass **disableActivationByURL** in options like this:
+```php
+$menu->add('Anchor', ['disableActivationByURL' => true, 'url' => '#']);
+```
+This prevents auto activation by matching URL.
+But activation for items with active children keeps working.
+
 ## Inserting a Separator
 
 You can insert a separator after each item using `divide()` method:
@@ -1348,6 +1359,20 @@ This is how your Bootstrap code is going to look like:
 </nav>
 ```
 
+#### Adding class attributes to child items
+
+Like adding a class to the menu `ul` and `ol`, classes can be added the submenu too. The three parameters to `asUl` are arrays as follows:
+
+- The first array is the attributes for the list: for example, `ul`
+- The second is the attributes for the child lists, for example, `ul>li>ul`
+- The third array is attributes that are added to the attributes of the `li` element
+
+With this you can add a class to the child menu (submenu) like this:
+
+```php
+{!! $menu->asUl( ['class' => 'first-level-ul'], ['class' => 'second-level-ul'] ) !!}
+```
+
 ## Subset Menus
 
 With your menu constructed you can call any of our subset menu functions to get a new `Builder` to quick generate additional menus.
@@ -1365,7 +1390,7 @@ This generates a `Builder` of the top level items, items without a parent.
 This generates a `Builder` of the immediate children of the active item.
 
 ```php
-{!! Menu::get('primary')->topMenu()->asUl() !!}
+{!! Menu::get('primary')->subMenu()->asUl() !!}
 ```
 
 #### Sibling Menu
@@ -1457,7 +1482,7 @@ To put the rendered menu in your application template, you can simply include `c
 
 Laravel menu extends Blade to handle special layouts.
 
-##### @lm-attrs
+##### @lm_attrs
 
 You might encounter situations when some of your HTML properties are explicitly written inside your view instead of dynamically being defined when adding the item; However you will need to merge these static attributes with your Item's attributes.
 
@@ -1486,7 +1511,7 @@ The view:
 
 ```php
 @foreach($items as $item)
-  <li@lm-attrs($item) @if($item->hasChildren()) class="dropdown" @endif data-test="test" @lm-endattrs>
+  <li @lm_attrs($item) @if($item->hasChildren()) class="dropdown" @endif data-test="test" @lm_endattrs>
       <a href="{!! $item->url !!}">{!! $item->title !!} </a>
       @if($item->hasChildren())
         <ul class="dropdown-menu">
